@@ -42,18 +42,17 @@ body::before{
 .box{
     position:relative;
     z-index:2;
-    width:350px;
-    padding:30px;
+    width:330px;
+    padding:25px;
     border-radius:20px;
     background:rgba(0,0,0,0.65);
     backdrop-filter:blur(6px);
-    text-align:center;
-    color:#fff;
-    box-shadow:0 0 25px rgba(255,255,255,0.2);
+    color:white;
 }
 
 .logo{
-    font-size:35px;
+    text-align:center;
+    font-size:30px;
     font-weight:bold;
     color:#ffcc00;
     margin-bottom:20px;
@@ -61,45 +60,78 @@ body::before{
 
 input{
     width:100%;
-    padding:15px;
+    padding:14px;
     border:none;
     border-radius:10px;
+    margin-bottom:12px;
     outline:none;
-    margin-bottom:15px;
-    font-size:16px;
+    font-size:15px;
 }
 
 button{
     width:100%;
-    padding:15px;
+    padding:14px;
     border:none;
     border-radius:10px;
     background:#ffcc00;
-    color:#000;
+    color:black;
     font-weight:bold;
     cursor:pointer;
-    transition:0.3s;
-    font-size:16px;
-}
-
-button:hover{
-    transform:scale(1.03);
+    margin-top:10px;
+    font-size:15px;
 }
 
 #painel{
     display:none;
 }
 
-#resultado{
-    margin-top:20px;
-    font-size:20px;
-    word-break:break-all;
+.menu{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
 }
 
-.status{
+.menu button{
+    margin-top:0;
+}
+
+.area{
+    display:none;
+}
+
+.ativo{
+    display:block;
+}
+
+.keyItem{
+    background:rgba(255,255,255,0.08);
+    padding:12px;
+    border-radius:10px;
+    margin-top:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.keyText{
+    font-size:14px;
+}
+
+.deleteBtn{
+    background:red;
+    color:white;
+    border:none;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+#novaKey{
     margin-top:15px;
+    text-align:center;
+    font-size:18px;
     color:#00ff88;
-    font-weight:bold;
+    word-break:break-all;
 }
 
 </style>
@@ -108,9 +140,7 @@ button:hover{
 
 <div class="box">
 
-    <div class="logo">
-        FANTA ADMIN
-    </div>
+    <div class="logo">FANTA ADMIN</div>
 
     <!-- LOGIN -->
 
@@ -134,13 +164,37 @@ button:hover{
 
     <div id="painel">
 
-        <button onclick="gerarKey()">
-            GERAR KEY
-        </button>
+        <div class="menu">
 
-        <div class="status" id="status"></div>
+            <button onclick="abrir('gerar')">
+                GERAR
+            </button>
 
-        <div id="resultado"></div>
+            <button onclick="abrir('keys')">
+                KEYS
+            </button>
+
+        </div>
+
+        <!-- GERAR KEY -->
+
+        <div id="gerar" class="area ativo">
+
+            <button onclick="gerarKey()">
+                GERAR NOVA KEY
+            </button>
+
+            <div id="novaKey"></div>
+
+        </div>
+
+        <!-- LISTA -->
+
+        <div id="keys" class="area">
+
+            <div id="listaKeys"></div>
+
+        </div>
 
     </div>
 
@@ -175,11 +229,27 @@ function logar(){
         document.getElementById("painel")
         .style.display = "block";
 
+        carregarKeys();
+
     }else{
 
         alert("Login inválido");
 
     }
+
+}
+
+function abrir(id){
+
+    document.querySelectorAll(".area")
+    .forEach(area => {
+
+        area.classList.remove("ativo");
+
+    });
+
+    document.getElementById(id)
+    .classList.add("ativo");
 
 }
 
@@ -222,13 +292,62 @@ async function gerarKey(){
 
     }
 
-    document.getElementById("status")
-    .innerHTML =
-    "KEY GERADA COM SUCESSO ✅";
+    document.getElementById("novaKey")
+    .innerHTML = novaKey;
 
-    document.getElementById("resultado")
-    .innerHTML =
-    novaKey;
+    carregarKeys();
+
+}
+
+async function carregarKeys(){
+
+    const { data, error } = await supabaseClient
+    .from("keys")
+    .select("*")
+    .order("id", { ascending:false });
+
+    if(error){
+        return;
+    }
+
+    let html = "";
+
+    data.forEach(item => {
+
+        html += `
+        
+        <div class="keyItem">
+
+            <div class="keyText">
+                ${item.key}
+            </div>
+
+            <button class="deleteBtn"
+            onclick="deletarKey(${item.id})">
+
+                X
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+    document.getElementById("listaKeys")
+    .innerHTML = html;
+
+}
+
+async function deletarKey(id){
+
+    await supabaseClient
+    .from("keys")
+    .delete()
+    .eq("id", id);
+
+    carregarKeys();
 
 }
 
