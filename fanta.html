@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FANTA ADMIN</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+    position:relative;
+    background:#000;
+}
+
+body::before{
+    content:"";
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQg84QY2_xsWTQVDW2OJwfIl_Y8tXsGvrFKEw&s');
+    background-size:cover;
+    background-position:center;
+    filter:blur(8px);
+    transform:scale(1.1);
+}
+
+.box{
+    position:relative;
+    z-index:2;
+    width:350px;
+    padding:30px;
+    border-radius:20px;
+    background:rgba(0,0,0,0.65);
+    backdrop-filter:blur(6px);
+    text-align:center;
+    color:#fff;
+    box-shadow:0 0 25px rgba(255,255,255,0.2);
+}
+
+.logo{
+    font-size:35px;
+    font-weight:bold;
+    color:#ffcc00;
+    margin-bottom:20px;
+}
+
+input{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    outline:none;
+    margin-bottom:15px;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    background:#ffcc00;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+    font-size:16px;
+}
+
+button:hover{
+    transform:scale(1.03);
+}
+
+#painel{
+    display:none;
+}
+
+#resultado{
+    margin-top:20px;
+    font-size:20px;
+    word-break:break-all;
+}
+
+.status{
+    margin-top:15px;
+    color:#00ff88;
+    font-weight:bold;
+}
+
+</style>
+</head>
+<body>
+
+<div class="box">
+
+    <div class="logo">
+        FANTA ADMIN
+    </div>
+
+    <!-- LOGIN -->
+
+    <div id="login">
+
+        <input type="text"
+        id="user"
+        placeholder="Usuário">
+
+        <input type="password"
+        id="senha"
+        placeholder="Senha">
+
+        <button onclick="logar()">
+            ENTRAR
+        </button>
+
+    </div>
+
+    <!-- PAINEL -->
+
+    <div id="painel">
+
+        <button onclick="gerarKey()">
+            GERAR KEY
+        </button>
+
+        <div class="status" id="status"></div>
+
+        <div id="resultado"></div>
+
+    </div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://oalyokjoixouwywxfmtz.supabase.co";
+
+const SUPABASE_KEY =
+"COLE_SUA_ANON_KEY";
+
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+function logar(){
+
+    const user =
+    document.getElementById("user").value;
+
+    const senha =
+    document.getElementById("senha").value;
+
+    if(user === "gbz" && senha === "123"){
+
+        document.getElementById("login")
+        .style.display = "none";
+
+        document.getElementById("painel")
+        .style.display = "block";
+
+    }else{
+
+        alert("Login inválido");
+
+    }
+
+}
+
+function criarKey(){
+
+    const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    let key = "FANTA-";
+
+    for(let i = 0; i < 8; i++){
+
+        key += chars.charAt(
+            Math.floor(Math.random() * chars.length)
+        );
+
+    }
+
+    return key;
+}
+
+async function gerarKey(){
+
+    const novaKey = criarKey();
+
+    const { error } = await supabaseClient
+    .from("keys")
+    .insert([
+        {
+            key: novaKey,
+            usada: false
+        }
+    ]);
+
+    if(error){
+
+        alert("Erro ao salvar");
+        console.log(error);
+        return;
+
+    }
+
+    document.getElementById("status")
+    .innerHTML =
+    "KEY GERADA COM SUCESSO ✅";
+
+    document.getElementById("resultado")
+    .innerHTML =
+    novaKey;
+
+}
+
+</script>
+
+</body>
+</html>
